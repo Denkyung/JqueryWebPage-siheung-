@@ -31,7 +31,7 @@ RUN apk update && \
     apk upgrade && \
     apk --no-cache add git curl ca-certificates
 
-ENV ADDRESS 5000
+ENV ADDRESS 5001
 EXPOSE $ADDRESS
 
 CMD [ "npm", "run", "serve" ]

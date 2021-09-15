@@ -10,7 +10,7 @@ COPY . .
 
 RUN npm run build
 
-ENV ADDRESS 5000
+ENV ADDRESS 5001
 EXPOSE $ADDRESS
 
 CMD ["npm", "run", "serve"]
