@@ -1,0 +1,86 @@
+variables:
+  NODE_VERSION: "14.17.6"
+
+stages:
+  - prepare
+  - build
+  - package
+  # - deploy
+
+prepare_deploy:
+  image: docker:latest
+  stage: prepare
+  allow_failure: true
+  when: manual
+  services:
+    - name: docker:dind
+  script:
+    - cd docker/node
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --build-arg NODE_VERSION --build-arg http_proxy --build-arg https_proxy --build-arg no_proxy --build-arg HTTP_PROXY --build-arg HTTPS_PROXY --build-arg NO_PROXY --pull -t "${CI_REGISTRY_IMAGE}:deploy-${NODE_VERSION}" .
+    - docker tag "${CI_REGISTRY_IMAGE}:deploy-${NODE_VERSION}" "${CI_REGISTRY_IMAGE}:deploy_${CI_COMMIT_REF_NAME}-${NODE_VERSION}"
+    - test ! -z "${CI_COMMIT_TAG}" && docker push "${CI_REGISTRY_IMAGE}:deploy-${NODE_VERSION}"
+    - docker push "${CI_REGISTRY_IMAGE}:deploy_${CI_COMMIT_REF_NAME}-${NODE_VERSION}"
+    - docker push "${CI_REGISTRY_IMAGE}:deploy-${NODE_VERSION}"
+  tags:
+    - linux
+
+prepare_javascript_library:
+  image: ${CI_REGISTRY_IMAGE}:deploy
+  stage: prepare
+  when: manual
+  cache:
+    key: $CI_PROJECT_NAME-javascript
+    paths:
+      - node_modules/
+    policy: push
+  script:
+    - npm install
+  tags:
+    - linux
+
+build_main:
+  image: ${CI_REGISTRY_IMAGE}:deploy
+  stage: build
+  artifacts:
+    name: $CI_PROJECT_NAME-$CI_COMMIT_REF_NAME-produnction
+    expire_in: 4 week
+    paths:
+      - dist/
+  dependencies:
+    - build_javascript_library
+  script:
+    - npm run build
+  tags:
+    - linux
+
+build_docker:
+  image: nas.markany.xyz/docker/docker:latest
+  stage: package
+  artifacts:
+    name: $CI_PROJECT_NAME-$CI_COMMIT_REF_NAME-dockerfile
+    expire_in: 6 week
+    paths:
+      - event-dashboard-stats-server.tar.gz
+  dependencies:
+    - build_main
+  services:
+    - name: docker:dind
+  script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --build-arg NODE_VERSION --build-arg http_proxy --build-arg https_proxy --build-arg no_proxy --build-arg HTTP_PROXY --build-arg HTTPS_PROXY --build-arg NO_PROXY --pull --cache-from "${CI_REGISTRY_IMAGE}:latest" --tag "${CI_REGISTRY_IMAGE}:latest" .
+    - docker tag "${CI_REGISTRY_IMAGE}:latest" "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}"
+    - test ! -z "${CI_COMMIT_TAG}" && docker push "${CI_REGISTRY_IMAGE}:latest"
+    - docker push "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}"
+    - docker tag "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}" event-dashboard-stats-server
+    - docker save "event-dashboard-stats-server" "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}" | gzip -c > event-dashboard-stats-server.tar.gz
+    - export DATE_STR=$(date +%Y%m%d%H%M%S)
+    - version.sh
+    - source ./version
+    - rclone --config=${RCLONE_CONFIG} mkdir drive:/argos/${CI_PROJECT_PATH}/${CI_COMMIT_REF_NAME}/${VERSION_TAG}/${VERSION_LONG}/${CI_PIPELINE_ID}/
+    - rclone --config=${RCLONE_CONFIG} mkdir drive:/argos/${CI_PROJECT_PATH}/${CI_COMMIT_REF_NAME}/${VERSION_TAG}/${VERSION_LONG}/${CI_PIPELINE_ID}/${DATE_STR}/
+    - rclone --config=${RCLONE_CONFIG} copy ${CI_PROJECT_NAME}.tar.gz drive:/argos/${CI_PROJECT_PATH}/${CI_COMMIT_REF_NAME}/${VERSION_TAG}/${VERSION_LONG}/${CI_PIPELINE_ID}/ &
+    # - rclone --config=${RCLONE_CONFIG} copy ${CI_PROJECT_NAME}.tar.gz drive:/argos/${CI_PROJECT_PATH}/${CI_COMMIT_REF_NAME}/${VERSION_TAG}/${VERSION_LONG}/${CI_PIPELINE_ID}/${DATE_STR}/ &
+    - time wait
+  tags:
+    - linux
