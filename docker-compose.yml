@@ -1,0 +1,10 @@
+version: "3.0"
+
+services:
+  environment:
+    image: event-dashboard-stats-server:master
+    restart: always
+    ports:
+      - "5000:5000"
+    env_file:
+      - ../.env
