@@ -44,6 +44,7 @@ prepare_javascript_library:
     key: $CI_PROJECT_NAME-$CI_COMMIT_REF_NAME
     paths:
       - node_modules/
+      - prod_node_modules/
   script:
     - npm install --only=production --loglevel verbose
     - mv node_modules prod_node_modules
@@ -84,8 +85,8 @@ package_docker:
     - docker tag "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}" event-dashboard-stats-server
     - docker save "event-dashboard-stats-server" "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}" | gzip -c > event-dashboard-stats-server.tar.gz
     - export DATE_STR=$(date +%Y%m%d%H%M%S)
-    - version.sh
-    - source ./version
+    # - version.sh
+    # - source ./version
     - rclone --config=${RCLONE_CONFIG} mkdir drive:/argos/${CI_PROJECT_PATH}/${CI_COMMIT_REF_NAME}/${VERSION_TAG}/${VERSION_LONG}/${CI_PIPELINE_ID}/
     - rclone --config=${RCLONE_CONFIG} mkdir drive:/argos/${CI_PROJECT_PATH}/${CI_COMMIT_REF_NAME}/${VERSION_TAG}/${VERSION_LONG}/${CI_PIPELINE_ID}/${DATE_STR}/
     - rclone --config=${RCLONE_CONFIG} copy ${CI_PROJECT_NAME}.tar.gz drive:/argos/${CI_PROJECT_PATH}/${CI_COMMIT_REF_NAME}/${VERSION_TAG}/${VERSION_LONG}/${CI_PIPELINE_ID}/ &
