@@ -3,7 +3,7 @@ variables:
 
 stages:
   - prepare
-  - build
+  - test
   - package
   # - deploy
 
@@ -52,23 +52,18 @@ prepare_javascript_library:
     - linux
 
 
-build_main:
+test_main:
   image: ${CI_REGISTRY_IMAGE}:deploy
-  stage: build
+  stage: test
   dependencies:
     - prepare_javascript_library
-  artifacts:
-    name: $CI_PROJECT_NAME-$CI_COMMIT_REF_NAME-build
-    expire_in: 4 week
-    paths:
-      - build/
   script:
-    - npm run build | echo "npm "
+    - echo "npm test"
   tags:
     - linux
 
 
-build_docker:
+package_docker:
   image: nas.markany.xyz/docker/docker:latest
   stage: package
   artifacts:
@@ -77,7 +72,7 @@ build_docker:
     paths:
       - event-dashboard-stats-server.tar.gz
   dependencies:
-    - build_main
+    - test_main
   services:
     - name: docker:dind
   script:
@@ -98,3 +93,4 @@ build_docker:
     - time wait
   tags:
     - linux
+    
