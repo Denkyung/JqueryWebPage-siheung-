@@ -2,6 +2,11 @@ ARG NODE_VERSION=14.17.6
 #
 # ---- Base ----
 FROM node:${NODE_VERSION} AS Base
+
+RUN apt-get update -yq \
+    && apt-get install -yq git curl ca-certificates \
+    && rm -rf /var/lib/apt
+
 WORKDIR /usr/src/app
 
 ARG NODE_ENV
@@ -27,9 +32,8 @@ WORKDIR /usr/src/app
 COPY . .
 COPY --from=Dependencies /usr/src/app/prod_node_modules ./node_modules
 
-RUN apk update && \
-    apk upgrade && \
-    apk --no-cache add git curl ca-certificates
+RUN apk update \
+    && apk --no-cache add git curl ca-certificates
 
 ENV ADDRESS 5001
 EXPOSE $ADDRESS
