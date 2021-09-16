@@ -7,6 +7,7 @@ stages:
   - package
   # - deploy
 
+
 prepare_deploy:
   image: docker:latest
   stage: prepare
@@ -25,40 +26,49 @@ prepare_deploy:
   tags:
     - linux
 
+
 prepare_javascript_library:
   image: ${CI_REGISTRY_IMAGE}:deploy
   stage: prepare
   when: manual
+  artifacts:
+    name: $CI_PROJECT_NAME-$CI_COMMIT_REF_NAME-prod_node_modules
+    expire_in: 4 week
+    paths:
+      - prod_node_modules/
   cache:
-    key: $CI_PROJECT_NAME-javascript
+    key: $CI_PROJECT_NAME-$CI_COMMIT_REF_NAME
     paths:
       - node_modules/
-    policy: push
   script:
-    - npm install
+    - npm install --only=production --loglevel verbose
+    - mv node_modules prod_node_modules
+    - npm install --loglevel verbose
   tags:
     - linux
+
 
 build_main:
   image: ${CI_REGISTRY_IMAGE}:deploy
   stage: build
+  dependencies:
+    - prepare_javascript_library
   artifacts:
-    name: $CI_PROJECT_NAME-$CI_COMMIT_REF_NAME-produnction
+    name: $CI_PROJECT_NAME-$CI_COMMIT_REF_NAME-build
     expire_in: 4 week
     paths:
-      - dist/
-  dependencies:
-    - build_javascript_library
+      - build/
   script:
-    - npm run build
+    - npm run build | echo "npm "
   tags:
     - linux
+
 
 build_docker:
   image: nas.markany.xyz/docker/docker:latest
   stage: package
   artifacts:
-    name: $CI_PROJECT_NAME-$CI_COMMIT_REF_NAME-dockerfile
+    name: $CI_PROJECT_NAME-$CI_COMMIT_REF_NAME-dockerimage
     expire_in: 6 week
     paths:
       - event-dashboard-stats-server.tar.gz
