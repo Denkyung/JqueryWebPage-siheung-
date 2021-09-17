@@ -7,13 +7,16 @@ const port = 5001;
 
 app.use(cors());
 
-var data_cout = 0;
 
+
+//for database
 //const { Client } = require('pg');
 const { Pool } = require('pg');
 
 //var client = null
 var pool = null
+
+var data_cout = 0;
 
 app.get('/count', (req, res) => {
   try{
@@ -45,6 +48,10 @@ app.get('/json', function(req, res) {
     name: 'John',
     gender: 'male'
   });
+});
+
+app.get('/sample', function(req, res) {
+  res.sendFile(__dirname + '/sample.htm') ;
 });
 
 app.listen(port, () => {
@@ -101,6 +108,7 @@ function init() {
     // callback - checkout a client
     pool.connect((err, client, done) => {
       if (err) throw err;
+
       client.query('SELECT NOW()', [], (err, res) => {
         done()
         if (err) {
@@ -116,3 +124,75 @@ function init() {
     console.log("[INIT] error:" + e);
   }
 }
+
+//for ejs
+app.set('view engine','ejs'); // 1
+app.use(express.static(__dirname + '/public'));
+//app.use(express.static('public'));
+app.engine('html', require('ejs').renderFile);   //important
+
+
+app.get('/test/:count', function(req,res){ // 3
+  console.log("/test called, count:" + req.params.count);
+  var count = req.params.count
+  if (!count) count=0
+  res.render('test', {count:count});
+});
+
+app.get('/test2', function(req,res){
+  console.log("/test2 called");
+  res.render('test', {count:0});
+});
+
+app.get('/login', function(req,res){
+  console.log("/login called");
+  res.render('login', {count:0});
+});
+
+app.get('/timeChart', function(req,res){
+  console.log("/timeChart called");
+  res.render('timeChart', {count:0});
+});
+
+app.get('/timeChartData', function(req,res){  
+  try{
+
+    console.log("/timeChartData called");
+
+    var query = "SELECT count(*) as ret from events";
+
+    pool.query(query, (err, result) => {
+      try{
+        console.log("ret:"+ result.rows[0].ret)
+        data_cout = result.rows[0].ret
+
+        //res.send('data_cout :'  + data_cout)
+
+        option = {
+          xAxis: {
+              type: 'category',
+              data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+          },
+          yAxis: {
+              type: 'value'
+          },
+          series: [{
+              data: [120, 220, 150, 80, 70, 110, 130],
+              type: 'bar'
+          }]
+      };        
+
+        res.json({
+          option: option,
+        });
+
+      }catch(e){
+        console.log("[COUNT] res error:" + e);  //e.stack
+      }      
+        
+    });  
+  }catch(e){
+    console.log("[COUNT] error:" + e);
+  }    
+});
+ 
