@@ -6,6 +6,18 @@
         <link rel="stylesheet" href="/css/bootstrap4.min.css">
         <script src="/js/bootstrap4.min.js"></script>        
 
+        <style type="text/css"> 
+            .spinner-border {
+                display: block;
+                position: fixed;
+                z-index: 1031; /* High z-index so it is on top of the page */
+                top: 50%;
+                right: 50%; /* or: left: 50%; */
+                margin-top: -..px; /* half of the elements height */
+                margin-right: -..px; /* half of the elements widht */
+            }        
+        </style>        
+
         <script type="text/javascript" src="/js/echarts.min.js"></script>
         <script type="text/javascript" src="/js/jquery-3.6.0.min.js"></script> 
         <script type="text/javascript"> 
@@ -23,6 +35,8 @@
                     
                     if (data.option){
                         myChart.setOption(data.option);
+
+                        $("#wait").hide();
                     }
                 });      
             }
@@ -53,6 +67,8 @@
 
             <br />
             <br />            
+
+            <div id="wait" class="spinner-border text-primary"></div>
 
             <div id="chart" style="height: 800px;"></div>   
         </div> 

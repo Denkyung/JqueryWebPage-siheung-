@@ -1,13 +1,10 @@
-
 const express = require('express');
 const cors = require('cors');
 
 const app = express();
 const port = 5001;
 
-app.use(cors());
-
-
+app.use(cors()); 
 
 //for database
 //const { Client } = require('pg');
@@ -181,47 +178,49 @@ app.get('/chart4', function(req,res){
   res.render('chart4', {count:0});
 });
 
-// app.get('/timeChartData', function(req,res){  
-//   try{
 
-//     console.log("/timeChartData called");
+function getToday() {
 
-//     var query = "SELECT count(*) as ret from events";
+  let today = new Date();   
 
-//     pool.query(query, (err, result) => {
-//       try{
-//         console.log("ret:"+ result.rows[0].ret)
-//         data_cout = result.rows[0].ret
+  let year = today.getFullYear(); // 년도
+  let month = today.getMonth() + 1;  // 월
+  let date = today.getDate();  // 날짜
+  //let day = today.getDay();  // 요일
 
-//         //res.send('data_cout :'  + data_cout)
+  if (month < 10) {
+    month = "0" + month;
+  }
+  if (date < 10) {
+    date = "0" + date;
+  }  
+  
+  var ret = year + '-' + month + '-' + date;
+  return ret;
+}
 
-//         option = {
-//           xAxis: {
-//               type: 'category',
-//               data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-//           },
-//           yAxis: {
-//               type: 'value'
-//           },
-//           series: [{
-//               data: [120, 220, 150, 80, 70, 110, 130],
-//               type: 'bar'
-//           }]
-//       };        
 
-//         res.json({
-//           option: option,
-//         });
+function getNextDay() {
 
-//       }catch(e){
-//         console.log("[COUNT] res error:" + e);  //e.stack
-//       }      
-        
-//     });  
-//   }catch(e){
-//     console.log("[COUNT] error:" + e);
-//   }    
-// });
+  let today = new Date();    
+
+  var myDate = new Date(new Date().getTime()+(1*24*60*60*1000)); 
+
+  let year = myDate.getFullYear(); // 년도
+  let month = myDate.getMonth() + 1;  // 월
+  let date = myDate.getDate();  // 날짜
+  //let day = myDate.getDay();  // 요일
+
+  if (month < 10) {
+    month = "0" + month;
+  }
+  if (date < 10) {
+    date = "0" + date;
+  }  
+  
+  var ret = year + '-' + month + '-' + date;
+  return ret;
+}
 
 
 app.get('/timeChartData', function(req,res){  
@@ -253,7 +252,7 @@ app.get('/timeChartData', function(req,res){
           },
           series: [
               {
-                  name: '访问来源',
+                  name: 'pie',
                   type: 'pie',
                   radius: '50%',
                   data: [
@@ -279,12 +278,12 @@ app.get('/timeChartData', function(req,res){
         });
 
       }catch(e){
-        console.log("[COUNT] res error:" + e);  //e.stack
+        console.log("[timeChartData] res error:" + e);  //e.stack
       }      
         
     });  
   }catch(e){
-    console.log("[COUNT] error:" + e);
+    console.log("[timeChartData] error:" + e);
   }    
 });
  
@@ -331,13 +330,6 @@ app.get('/chartData1', function(req,res){
                   name: 'event',
                   type: 'pie',
                   radius: '50%',
-                  // data: [
-                  //     {value: 1048, name: '움직임 (20%)'},
-                  //     {value: 735, name: '배회 (10%)'},
-                  //     {value: 580, name: '번호판 (10%)'},
-                  //     {value: 484, name: '쓰러짐 (10%)'},
-                  //     {value: 300, name: '침입 (10%)'}
-                  // ],
                   data : arr_data,
                   emphasis: {
                       itemStyle: {
@@ -355,57 +347,15 @@ app.get('/chartData1', function(req,res){
         });
 
       }catch(e){
-        console.log("[COUNT] res error:" + e);  //e.stack
+        console.log("[chartData1] res error:" + e);  //e.stack
       }      
         
     });  
   }catch(e){
-    console.log("[COUNT] error:" + e);
+    console.log("[chartData1] error:" + e);
   }    
 });
  
-function getToday() {
-
-  let today = new Date();   
-
-  let year = today.getFullYear(); // 년도
-  let month = today.getMonth() + 1;  // 월
-  let date = today.getDate();  // 날짜
-  //let day = today.getDay();  // 요일
-
-  if (month < 10) {
-    month = "0" + month;
-  }
-  if (date < 10) {
-    date = "0" + date;
-  }  
-  
-  var ret = year + '-' + month + '-' + date;
-  return ret;
-}
-
-
-function getNextDay() {
-
-  let today = new Date();    
-
-  var myDate = new Date(new Date().getTime()+(1*24*60*60*1000)); 
-
-  let year = myDate.getFullYear(); // 년도
-  let month = myDate.getMonth() + 1;  // 월
-  let date = myDate.getDate();  // 날짜
-  //let day = myDate.getDay();  // 요일
-
-  if (month < 10) {
-    month = "0" + month;
-  }
-  if (date < 10) {
-    date = "0" + date;
-  }  
-  
-  var ret = year + '-' + month + '-' + date;
-  return ret;
-}
 
 app.get('/chartData2', function(req,res){  
   try{ 
@@ -473,12 +423,12 @@ app.get('/chartData2', function(req,res){
         });
 
       }catch(e){
-        console.log("[COUNT] res error:" + e);  //e.stack
+        console.log("[chartData2] res error:" + e);  //e.stack
       }      
         
     });  
   }catch(e){
-    console.log("[COUNT] error:" + e);
+    console.log("[chartData2] error:" + e);
   }    
 });
  
@@ -535,12 +485,12 @@ app.get('/chartData3', function(req,res){
         });
 
       }catch(e){
-        console.log("[COUNT] res error:" + e);  //e.stack
+        console.log("[chartData3] res error:" + e);  //e.stack
       }      
         
     });  
   }catch(e){
-    console.log("[COUNT] error:" + e);
+    console.log("[chartData3] error:" + e);
   }    
 });
  
@@ -549,7 +499,7 @@ app.get('/chartData3', function(req,res){
 app.get('/chartData4', function(req,res){  
   try{
 
-    console.log("/chartData2 called");
+    console.log("/chartData4 called");
 
     var query = "select code2, category, count(*) as count, SUM(count(*)) over () as sum from events group by code2,category  order by code2,category";
 
@@ -651,117 +601,11 @@ app.get('/chartData4', function(req,res){
         });
 
       }catch(e){
-        console.log("[COUNT] res error:" + e);  //e.stack
+        console.log("[chartData4] res error:" + e);  //e.stack
       }      
         
     });  
   }catch(e){
-    console.log("[COUNT] error:" + e);
+    console.log("[chartData4] error:" + e);
   }    
-});
- 
-
-
-app.get('/chartData5', function(req,res){  
-  try{
-
-    console.log("/chartData5 called");
-
-    var query = "select code2, category, count(*) as count, SUM(count(*)) over () as sum from events group by code2,category  order by code2,category";
-
-    pool.query(query, (err, result) => {
-      try{
-
-        var arr_data_loc = [];
-        var arr_data_level = [];
-        var arr_data = [];
-
-        var hashmap_category = {}; 
-
-        for(var i = 0; i < result.rows.length; i++){
-          console.log("code2[" + i + "] : " + result.rows[i].code2);
-          console.log("category[" + i + "] : " + result.rows[i].category);
-          console.log("count[" + i + "] : " + result.rows[i].count);
-          console.log("sum[" + i + "] : " + result.rows[i].sum);
-
-          var loc = result.rows[i].code2;
-          var level = result.rows[i].category;
-          var count = result.rows[i].category;
-
-          if (arr_data_loc.indexOf(loc) == -1){
-            arr_data_loc.push(loc);
-          }
-          if (arr_data_level.indexOf(level) == -1){
-            arr_data_level.push(level);
-          }
-          if (arr_data.indexOf(count) == -1){
-            arr_data.push(count);
-          }
-
-          if (!hashmap_category[level]){
-            hashmap_category[level] = {name:level, datas:[]};
-          }
-
-          hashmap_category[level].datas.push(count);
-        }//for   
-
-        var arrSeries = [];
-
-        for(var i=0; i<hashmap_category.length; i++) {
-          var datas_name = hashmap_category[i].name;
-          var datas_array = hashmap_category[i].datas;
-          arrSeries[i].push(
-            {
-              name: datas_name,
-              type: 'bar',
-              stack: 'total',
-              label: {
-                  show: true
-              },
-              emphasis: {
-                  focus: 'series'
-              },
-              data: datas_array
-            });
-        }
-
-        option = {
-      
-          tooltip: {
-              trigger: 'axis',
-              axisPointer: {            // Use axis to trigger tooltip
-                  type: 'shadow'        // 'shadow' as default; can also be 'line' or 'shadow'
-              }
-          },
-          legend: {
-              data: arr_data_level
-          },
-          grid: {
-              left: '3%',
-              right: '4%',
-              bottom: '3%',
-              containLabel: true
-          },
-          xAxis: {
-              type: 'value'
-          },
-          yAxis: {
-              type: 'category',
-              data: arr_data_loc
-          },
-          series: arrSeries, 
-      };
-
-        res.json({
-          option: option,
-        });
-
-      }catch(e){
-        console.log("[COUNT] res error:" + e);  //e.stack
-      }      
-        
-    });  
-  }catch(e){
-    console.log("[COUNT] error:" + e);
-  }    
-});
+}); 
