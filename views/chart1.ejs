@@ -18,8 +18,8 @@
                 
                 var option;          
 
-                $.getJSON("/timeChartData", function(data){
-                    console.log("[timeChartData] data:", data.option);
+                $.getJSON("/chartData1", function(data){
+                    console.log("[chartData1] data:", data.option);
                     
                     if (data.option){
                         myChart.setOption(data.option);

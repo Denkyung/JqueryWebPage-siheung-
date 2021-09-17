@@ -11,7 +11,18 @@
 
             function doLogin() {               
                 console.log("login called") ;
-                alert("login called") ;
+                //alert("login called") ;
+                //alert("id:" + $('#username').val()) ;
+
+                if ($('#username').val() != "eventadmin") {
+                    alert("invalid id/pwd");
+                    return;
+                }
+                if ($('#password').val() != "eventadmin") {
+                    alert("invalid id/pwd");
+                    return;
+                }                
+
                 location.href = "/timeChart";
             }
         </script>

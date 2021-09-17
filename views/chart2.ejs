@@ -8,17 +8,70 @@
 
         <script type="text/javascript" src="/js/echarts.min.js"></script>
         <script type="text/javascript" src="/js/jquery-3.6.0.min.js"></script> 
-        <script type="text/javascript"> 
+        <script type="text/javascript">  
+
+            function getToday() {
+
+                let today = new Date();   
+
+                let year = today.getFullYear(); // 년도
+                let month = today.getMonth() + 1;  // 월
+                let date = today.getDate();  // 날짜
+                //let day = today.getDay();  // 요일
+
+                if (month < 10) {
+                month = "0" + month;
+                }
+                if (date < 10) {
+                date = "0" + date;
+                }  
+
+                var ret = year + '-' + month + '-' + date;
+            return ret;
+            }
+
+
+            function getNextDay() {
+
+                let today = new Date();    
+
+                var myDate = new Date(new Date().getTime()+(1*24*60*60*1000)); 
+
+                let year = myDate.getFullYear(); // 년도
+                let month = myDate.getMonth() + 1;  // 월
+                let date = myDate.getDate();  // 날짜
+                //let day = myDate.getDay();  // 요일
+
+                if (month < 10) {
+                month = "0" + month;
+                }
+                if (date < 10) {
+                date = "0" + date;
+                }  
+
+                var ret = year + '-' + month + '-' + date;
+                return ret;
+            }        
 
             window.onload = function() { 
 
                 var dom = document.getElementById("chart");
                 var myChart = echarts.init(dom);
                 var app = {};
+
+                var fromDate = getToday();
+                var toDate = getNextDay(); 
+
+                if (!fromDate){
+                    fromDate = getToday();
+                }
+                if (!toDate){
+                    toDate = getNextDay();
+                }                         
                 
                 var option;          
 
-                $.getJSON("/timeChartData", function(data){
+                $.getJSON("/chartData2?fromDate=" + fromDate + "&toDate=" + toDate, function(data){
                     console.log("[timeChartData] data:", data.option);
                     
                     if (data.option){
