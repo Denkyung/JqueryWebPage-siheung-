@@ -4,10 +4,12 @@
         <meta charset="utf-8">
 
         <link rel="stylesheet" href="/css/bootstrap4.min.css">
-        <script src="/js/bootstrap4.min.js"></script>        
 
-        <script type="text/javascript" src="/js/echarts.min.js"></script>
         <script type="text/javascript" src="/js/jquery-3.6.0.min.js"></script> 
+        <script type="text/javascript" src="/js/bootstrap4.min.js"></script>
+        <script type="text/javascript" src="/js/echarts.min.js"></script>        
+        <script type="text/javascript" src="/js/util.js"></script>
+
         <script type="text/javascript"> 
 
             window.onload = function() { 
@@ -15,12 +17,22 @@
                 var dom = document.getElementById("chart");
                 var myChart = echarts.init(dom);
                 var app = {};
+
+                var today = getToday();
+                $("#today").val("전체 기간");
+                $("#today").prop('disabled', true);
                 
                 var option;          
 
                 $.getJSON("/chartData3", function(data){
                     console.log("[chartData3] data:", data.option);
-                    
+                    console.log("[chartData3] error:", data.error);
+
+                    if (data.error) {
+                        alert("[ERROR] " + data.error);
+                        return;
+                    }  
+
                     if (data.option){
                         myChart.setOption(data.option);
                     }
@@ -35,20 +47,23 @@
         <div style="padding-left: 100px;padding-right: 100px;">
             <nav class="navbar navbar-expand-sm bg-primary navbar-dark" >
                 <ul class="navbar-nav">
-                    <input size="10" style="margin-left:2px;margin-right: 10px;"/>
-                <li class="nav-item">
-                    <a class="nav-link" href="/chart1">[이벤트 현황(총계)]</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/chart2">[날짜별 발생 현황]</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/chart3">[시간대별 발생 현황]</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/chart4">[장소별 발생 현황]</a>
-                </li>
-                </ul>                
+
+                    <img src="/img/excel.png" style="cursor: pointer;" title="download excel file"  onclick="downlaodExecl()"/>
+                    
+                    <input size="10" id="today" style="margin-left:2px;margin-right: 10px;"/>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/chart2">[날짜별 발생 현황]</a>
+                    </li>                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/chart1">[이벤트 현황(총계)]</a>
+                    </li>
+                    <!-- <li class="nav-item">
+                        <a class="nav-link" href="/chart3">[시간대별 발생 현황]</a>
+                    </li> -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="/chart4">[장소별 발생 현황]</a>
+                    </li>
+                </ul>              
             </nav>
 
             <br />

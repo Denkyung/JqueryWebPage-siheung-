@@ -17,30 +17,51 @@
             }        
         </style>
 
-        <script src="/js/bootstrap4.min.js"></script>        
-
-        <script type="text/javascript" src="/js/echarts.min.js"></script>
         <script type="text/javascript" src="/js/jquery-3.6.0.min.js"></script> 
+        <script type="text/javascript" src="/js/bootstrap4.min.js"></script>
+        <script type="text/javascript" src="/js/echarts.min.js"></script>        
+        <script type="text/javascript" src="/js/util.js"></script>
+
         <script type="text/javascript"> 
 
             window.onload = function() { 
-
                 var dom = document.getElementById("chart");
                 var myChart = echarts.init(dom);
                 var app = {};
+
+                var today = getToday();
+                $("#today").val("전체 기간");
+                $("#today").prop('disabled', true);
                 
                 var option;          
 
+                $("#waitMsg").show();
+
                 $.getJSON("/chartData1", function(data){
                     console.log("[chartData1] data:", data.option);
+                    console.log("[chartData1] error:", data.error);
+
+                    if (data.error) {
+                        alert("[ERROR] " + data.error);
+                        return;
+                    }                    
                     
                     if (data.option){
                         myChart.setOption(data.option);
 
                         $("#wait").hide();
+                        $("#waitMsg").hide();
                     }
-                });      
-            }
+                });   
+            } 
+
+            function downlaodExecl() {
+                if (!confirm("전체기간에 대한 엑셀 다운로드는 서버에 부하를 많이 줄 수 있으며 5분이상 소요될 수 있습니다. \n\n계속하시겠습니까? \n(다운로드 완료시까지 창을 닫으면 안됨)")) {
+                    return;
+                }
+
+                location.href = "/chartData1Excel";
+            }   
 
         </script>        
     </head>
@@ -50,29 +71,35 @@
          
         <div style="padding-left: 100px;padding-right: 100px;">
             <nav class="navbar navbar-expand-sm bg-primary navbar-dark" >
-                <ul class="navbar-nav">
-                    <input size="10" style="margin-left:2px;margin-right: 10px;"/>
-                <li class="nav-item">
-                    <a class="nav-link" href="/chart1">[이벤트 현황(총계)]</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/chart2">[날짜별 발생 현황]</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/chart3">[시간대별 발생 현황]</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/chart4">[장소별 발생 현황]</a>
-                </li>
-                </ul>                
+                <ul class="navbar-nav">                    
+
+                    <!-- <img src="/img/refresh.png" width="48px" style="cursor: pointer;" title="서버 캐쉬 삭제" onclick="clearServerCache()"/> -->
+                    <img src="/img/excel.png" style="cursor: pointer;" title="download excel file" onclick="downlaodExecl()"/>
+
+                    <input size="10" id="today" style="margin-left:2px;margin-right: 10px;"/>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/chart2">[날짜별 발생 현황]</a>
+                    </li>                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/chart1">[이벤트 현황(총계)]</a>
+                    </li>
+                    <!-- <li class="nav-item">
+                        <a class="nav-link" href="/chart3">[시간대별 발생 현황]</a>
+                    </li> -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="/chart4">[장소별 발생 현황]</a>
+                    </li>
+                </ul>               
             </nav>
 
             <br />
-            <br />     
+            <br />
 
-            <div id="wait" class="spinner-border text-primary"></div>
-
-            <div id="chart" style="height: 800px;"></div>             
+            <div id="waitMsg" class="alert alert-danger" role="alert" style="display: none;">
+                [WARN] 전체 기간으로 조회시 서버에 부하를 줄 수 있으며 5분이상 소요가 될 수 있습니다. (탭이나 창을 이동하면 안됨)
+            </div> 
+            <div id="wait" class="spinner-border text-primary"></div>      
+            <div id="chart" style="height: 800px;"></div>
         </div> 
     </body>
  

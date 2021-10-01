@@ -4,81 +4,100 @@
         <meta charset="utf-8">
 
         <link rel="stylesheet" href="/css/bootstrap4.min.css">
-        <script src="/js/bootstrap4.min.js"></script>        
 
-        <script type="text/javascript" src="/js/echarts.min.js"></script>
+        <style type="text/css"> 
+            .spinner-border {
+                display: block;
+                position: fixed;
+                z-index: 1031; /* High z-index so it is on top of the page */
+                top: 50%;
+                right: 50%; /* or: left: 50%; */
+                margin-top: -..px; /* half of the elements height */
+                margin-right: -..px; /* half of the elements widht */
+            }        
+        </style>         
+        
         <script type="text/javascript" src="/js/jquery-3.6.0.min.js"></script> 
+        <script type="text/javascript" src="/js/bootstrap4.min.js"></script>
+        <script type="text/javascript" src="/js/echarts.min.js"></script>        
+        <script type="text/javascript" src="/js/util.js"></script>
+
         <script type="text/javascript">  
 
-            function getToday() {
-
-                let today = new Date();   
-
-                let year = today.getFullYear(); // 년도
-                let month = today.getMonth() + 1;  // 월
-                let date = today.getDate();  // 날짜
-                //let day = today.getDay();  // 요일
-
-                if (month < 10) {
-                month = "0" + month;
-                }
-                if (date < 10) {
-                date = "0" + date;
-                }  
-
-                var ret = year + '-' + month + '-' + date;
-            return ret;
+            window.onload = function() { 
+                $("#today").prop('disabled', false);
+                goDateBar();
             }
 
-
-            function getNextDay() {
-
-                let today = new Date();    
-
-                var myDate = new Date(new Date().getTime()+(1*24*60*60*1000)); 
-
-                let year = myDate.getFullYear(); // 년도
-                let month = myDate.getMonth() + 1;  // 월
-                let date = myDate.getDate();  // 날짜
-                //let day = myDate.getDay();  // 요일
-
-                if (month < 10) {
-                month = "0" + month;
+            function enterkey() {
+                if (window.event.keyCode == 13) {
+                    goDateBar();
                 }
-                if (date < 10) {
-                date = "0" + date;
-                }  
+            }
 
-                var ret = year + '-' + month + '-' + date;
-                return ret;
-            }        
+            function goDateBar() {
 
-            window.onload = function() { 
+                console.log("[goDateBar] called");
 
                 var dom = document.getElementById("chart");
                 var myChart = echarts.init(dom);
                 var app = {};
 
-                var fromDate = getToday();
-                var toDate = getNextDay(); 
-
-                if (!fromDate){
-                    fromDate = getToday();
+                var today =  $("#today").val();
+                
+                if (!today) {
+                    today = getToday();
+                    $("#today").val(today);
                 }
-                if (!toDate){
-                    toDate = getNextDay();
-                }                         
+
+                if (!isValidDate(today)) {
+                    alert("[오류] 유효하지 않은 날짜 형식입니다! " + today);
+                    $("#today").focus();
+                    return;
+                }
+
+                if (today.length != 10) {
+                    alert("[오류] 유효하지 않은 날짜 형식입니다! yyyy-mm-dd 형식으로 입력해주세요");
+                    $("#today").focus();
+                    return;
+                }
+
+                var fromDate = today;
+                var toDate = getNextDay(fromDate);
+
+                console.log("[goDateBar] fromDate:", fromDate);
+                console.log("[goDateBar] toDate:", toDate);
                 
                 var option;          
 
                 $.getJSON("/chartData2?fromDate=" + fromDate + "&toDate=" + toDate, function(data){
-                    console.log("[timeChartData] data:", data.option);
+                    console.log("[chartData2] data:", data.option);
+                    console.log("[chartData2] error:", data.error);
+
+                    $("#wait").hide();
+
+                    if (data.error) {
+                        alert("[ERROR] " + data.error);
+                        return;
+                    }
                     
                     if (data.option){
                         myChart.setOption(data.option);
                     }
-                });      
+                });                 
             }
+
+            function downlaodExecl() {
+                alert("엑셀 다운로드는 '이벤트 현황(총계)'와 '장소별 발생 현황'만 지원됩니다");
+                return;
+
+                if (!confirm("엑셀 다운로드를 하시겠습니까?")) {
+                    return;
+                }
+
+                location.href = "/chartData2Excel";
+
+            }               
 
         </script>        
     </head>
@@ -88,26 +107,30 @@
         <div style="padding-left: 100px;padding-right: 100px;">
             <nav class="navbar navbar-expand-sm bg-primary navbar-dark" >
                 <ul class="navbar-nav">
-                    <input size="10" style="margin-left:2px;margin-right: 10px;"/>
-                <li class="nav-item">
-                    <a class="nav-link" href="/chart1">[이벤트 현황(총계)]</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/chart2">[날짜별 발생 현황]</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/chart3">[시간대별 발생 현황]</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/chart4">[장소별 발생 현황]</a>
-                </li>
-                </ul>                
+                    
+                    <img src="/img/excel.png" style="cursor: pointer;" title="download excel file"  onclick="downlaodExecl()"/>
+
+                    <input size="10" id="today" style="margin-left:2px;margin-right: 10px;" onkeyup="enterkey()"/>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="goDateBar()">[날짜별 발생 현황]</a>
+                    </li>                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/chart1">[이벤트 현황(총계)]</a>
+                    </li>
+                    <!-- <li class="nav-item">
+                        <a class="nav-link" href="/chart3">[시간대별 발생 현황]</a>
+                    </li> -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="/chart4">[장소별 발생 현황]</a>
+                    </li>
+                </ul>                 
             </nav>
 
             <br />
             <br />            
 
             <div id="chart" style="height: 800px;"></div>   
+            <div id="wait" class="spinner-border text-primary"></div>
         </div> 
     </body>
  
