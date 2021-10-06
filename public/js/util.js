@@ -70,3 +70,16 @@
 
         return false;
     }
+
+    function convertDateToNumber(strDate) {
+
+        if(!isValidDate(strDate)) {
+            return -1;
+        }
+
+        var strNum = strDate.replace(/-/gi,"");
+
+        var num = Number(strNum);
+
+        return num;
+    }

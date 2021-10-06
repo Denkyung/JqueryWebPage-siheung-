@@ -1,4 +1,4 @@
-var lastUpdate = "2021-10-01 09:30";
+var lastUpdate = "2021-10-06 10:30";
 
 console.log("");
 console.log("==============================");
@@ -17,11 +17,14 @@ const ExcelJS = require('exceljs');
 
 //================================
 var LRU = require("lru-cache");
-var options = { 
-  max: 20,
+var cache = new LRU({ 
+  max: 100,
   maxAge: 1000 * 60 * 60 * 4
-}
-var cache = new LRU(options);
+});
+var cache_today = new LRU({ 
+  max: 10,
+  maxAge: 1000 * 10
+});
 
 //================================
 //for database
@@ -85,7 +88,7 @@ function init() {
     var db_port = 5432;
     var db_user = 'pdb';
     var db_database = 'log_db';
-    //var db_password = '4Z2CrYcasdfLe0OUM9YD';
+    //var db_password = '4Z2CrYcasdfLe0OUM9YD';  //localhost
     var db_password = 'zXNWpbYtjm1Xj0pP';  //6번
 
     //process.env.LOG_DB_ADDRESS = "localhost:5432";
@@ -207,10 +210,10 @@ function getToday() {
   //let day = today.getDay();  // 요일
 
   if (month < 10) {
-  month = "0" + month;
+    month = "0" + month;
   }
   if (date < 10) {
-  date = "0" + date;
+    date = "0" + date;
   }  
 
   var ret = year + '-' + month + '-' + date;
@@ -227,7 +230,7 @@ function getNextDay(targetDate) {
   let today = new Date(targetDate);    
 
   var myDate = today;
-  myDate.setDate(myDate.getDate() + 1);
+  myDate.setDate(myDate.getDate() + 1);  //important
 
   let year = myDate.getFullYear(); // 년도
   let month = myDate.getMonth() + 1;  // 월
@@ -235,10 +238,10 @@ function getNextDay(targetDate) {
   //let day = myDate.getDay();  // 요일
 
   if (month < 10) {
-  month = "0" + month;
+    month = "0" + month;
   }
   if (date < 10) {
-  date = "0" + date;
+    date = "0" + date;
   }  
 
   var ret = year + '-' + month + '-' + date;
@@ -252,9 +255,9 @@ app.get('/chartData1', function(req,res){
 app.get('/chartData2', function(req,res){  
   chartData2_real(req,res,false);
 });
-app.get('/chartData3', function(req,res){  
-  chartData3_real(req,res,false);
-});
+// app.get('/chartData3', function(req,res){  
+//   chartData3_real(req,res,false);
+// });
 app.get('/chartData4', function(req,res){  
   chartData4_real(req,res,false);
 });
@@ -280,9 +283,8 @@ function chartData1_real(req,res,excelFlag,callbackFunc){
 
     var option_cache_excel = cache.get("chartData1_excel");  //for cache
     if(option_cache_excel){
-      console.log("[chartData1_real] option_cache_excel found! return ok! option_cache_excel:", option_cache_excel);
-
       if(excelFlag){ 
+        console.log("[chartData1_real] option_cache_excel found! return ok! option_cache_excel:", option_cache_excel);
         return callbackFunc(req,res,option_cache_excel);
       }      
     }    
@@ -302,21 +304,28 @@ function chartData1_real(req,res,excelFlag,callbackFunc){
                   , 2) as percent \
                   from events order by percent desc";
 
+    console.log("");
+    console.log("[chartData1_real] query : ", query);
+    console.log("");
+
     pool.query(query, (err, result) => {
       try{
 
         var arr_data = [];
+        var arr_data_excel = [];
+
         var sum = 0;
 
         for(var i = 0; i < result.rows.length; i++){
           console.log("category[" + i + "] : " + result.rows[i].category);
           console.log("percent[" + i + "] : " + result.rows[i].percent);
-          console.log("percent[" + i + "] : " + result.rows[i].count);
+          console.log("count[" + i + "] : " + result.rows[i].count);
 
           sum = result.rows[i].sum;
           var strCount = Number(result.rows[i].count).toLocaleString();
 
-          arr_data.push({name:result.rows[i].category + " (" + strCount + "건)", value:result.rows[i].percent})
+          arr_data.push({name:result.rows[i].category + " (" + strCount + "건)", value:result.rows[i].percent});
+          arr_data_excel.push({name:result.rows[i].category, count:result.rows[i].count, value:result.rows[i].percent});
         }          
 
         var strSum = Number(sum).toLocaleString();
@@ -352,10 +361,9 @@ function chartData1_real(req,res,excelFlag,callbackFunc){
       };     
 
         cache.set("chartData1", option);  //for cache
-        cache.set("chartData1_excel", [title, arr_data]);  //for cache
-
+        cache.set("chartData1_excel", [title, arr_data_excel]);  //for cache
         if(excelFlag){
-          return callbackFunc(req,res,[title, arr_data]);
+          return callbackFunc(req,res,[title, arr_data_excel]);
         }          
 
         res.json({
@@ -372,41 +380,63 @@ function chartData1_real(req,res,excelFlag,callbackFunc){
   }    
 }
 
-function chartData2_real(req,res,excelFlag){  
+function chartData2_real(req,res,excelFlag,callbackFunc){  
   try{
 
-    console.log("/chartData2_real called, excelFlag:" + excelFlag);
+    console.log("[chartData2_real] called, excelFlag:" + excelFlag);
 
     var fromDate = req.query.fromDate;
     var toDate = req.query.toDate;
+    var toDateOrg = toDate;  //원래 toDate
 
-    var todayFlag = false;
-    var today = getToday();    
+    console.log("[chartData2_real] fromDate:" + fromDate);
+    console.log("[chartData2_real] toDate:" + toDate);
+    console.log("[chartData2_real] toDateOrg:" + toDateOrg);
 
-    if (!fromDate) {
-      fromDate = getToday();
-      toDate = getNextDay(fromDate);
+    if(!fromDate) {
+      throw "[ERROR][chartData2_real] empty fromDate!";
+    }
+    if(!toDate) {
+      throw "[ERROR][chartData2_real] empty toDate!";
     }    
 
-    if (today == fromDate) {
-        todayFlag = true;
+    var todayFlag = false;
+    if (fromDate == getToday()) {
+      todayFlag = true;
     }
-    
-    if (!todayFlag) {
-      var option_cache = cache.get("chartData2:" + fromDate);  //for cache
-      if(option_cache){
-        console.log("[chartData2] cache found! return ok!");
 
-        if(excelFlag){
-          return option_cache;
-        }        
+    toDate = getNextDay(toDate);  //'<='가 아니라 '<'이므로 다음날을 구함
+
+    var cacheKey = "chartData2_" + fromDate + "_" + toDateOrg;
+    console.log("[chartData2_real] todayFlag:" + todayFlag + ", cacheKey:" + cacheKey);    
+    
+    var option_cache = null;
+
+    if(!excelFlag){
+      if(todayFlag){
+        var option_cache = cache_today.get(cacheKey);  //for cache - 오늘 날짜는 짧게 캐쉬
+      }else{
+        var option_cache = cache.get(cacheKey);  //for cache
+      } 
+
+      if(option_cache){
+        console.log("[chartData2_real] cache found! return ok!");
 
         res.json({
           option: option_cache,
-        });    
-        return;
-      }    
-    }
+        }); 
+
+        return;       
+      }   
+    }      
+
+    var option_cache_excel = cache.get(cacheKey + "_excel");  //for cache
+    if(option_cache_excel){
+      if(excelFlag){ 
+        console.log("[chartData2_real] option_cache_excel found! return ok! option_cache_excel:", option_cache_excel);
+        return callbackFunc(req,res,option_cache_excel);
+      }      
+    }      
 
     if(!mDBConnectedFlag){
       connectDB();
@@ -424,6 +454,10 @@ function chartData2_real(req,res,excelFlag){
           AND time < '" + toDate + "T00:00:00+09:00'::TIMESTAMP WITH TIME ZONE \
           group by category"; 
 
+    console.log("");
+    console.log("[chartData2_real] query : ", query);
+    console.log("");
+
     pool.query(query, (err, result) => {
       try{
         var arr_data_level = []
@@ -440,11 +474,27 @@ function chartData2_real(req,res,excelFlag){
           sum = result.rows[i].sum;
           count = result.rows[i].count;
 
-          arr_data_level.push(result.rows[i].category + " (" + Number(count).toLocaleString() + "건)")
+          if(excelFlag){
+            arr_data_level.push(result.rows[i].category);
+          }else{
+            arr_data_level.push(result.rows[i].category + " (" + Number(count).toLocaleString() + "건)")
+          }
+         
           arr_data.push(result.rows[i].count)
         }
         
-        var title = "날짜별 발생 현황 (" + fromDate + ", 총 " + Number(sum).toLocaleString() + "건)";
+        var strDate = fromDate + "~" + toDateOrg;
+        if (fromDate == toDateOrg){
+          strDate = fromDate;
+        }
+
+        var title = "날짜별 발생 현황 (" + strDate + ", 총 " + Number(sum).toLocaleString() + "건)";
+        if(excelFlag){
+          var strDate_new = fromDate.substring(5,10) + "~" + toDateOrg.substring(5,10);
+          title = "총 " + Number(sum).toLocaleString() + "건(" + strDate_new + ")";
+        }
+
+        console.log("");
         console.log("title:" + title);
 
         option = {
@@ -463,15 +513,22 @@ function chartData2_real(req,res,excelFlag){
               data: arr_data,
               type: 'bar'
           }]
-      };
+        };
 
-      if (!todayFlag) {
-        cache.set("chartData2:" + fromDate, option);  //for cache
-      }
+        if (todayFlag) {
+          cache_today.set(cacheKey, option);  //for cache      
+        }else{
+          cache.set(cacheKey, option);  //for cache           
+        } 
 
-      if(excelFlag){
-        return option;
-      }        
+        if(excelFlag){
+          if (todayFlag) {
+            cache_today.set(cacheKey + "_excel", [title, arr_data_level, arr_data]);  //for cache - title이 달라 excel일 경우만 저장     
+          }else{
+            cache.set(cacheKey + "_excel", [title, arr_data_level, arr_data]);  //for cache - title이 달라 excel일 경우만 저장     
+          }
+          return callbackFunc(req,res,[title, arr_data_level, arr_data]);
+        }       
 
         res.json({
           option: option,
@@ -483,13 +540,14 @@ function chartData2_real(req,res,excelFlag){
       }      
         
     });  
+
   }catch(e){
     console.log("[chartData2] error:" + e);
   }    
 }
  
-
-function chartData3_real(req,res,excelFlag){  
+/*
+function chartData3_real(req,res,excelFlag,callbackFunc){  
   try{
 
     console.log("/chartData3_real called, excelFlag:" + excelFlag);
@@ -514,6 +572,8 @@ function chartData3_real(req,res,excelFlag){
     }    
 
     var query = "SELECT count(*) as ret from events";
+
+    console.log("[chartData3_real] query : ", query);
 
     pool.query(query, (err, result) => {
       try{
@@ -574,7 +634,7 @@ function chartData3_real(req,res,excelFlag){
     console.log("[chartData3] error:" + e);
   }    
 }
- 
+*/
 
 function chartData4_real(req,res,excelFlag,callbackFunc){  
   try{
@@ -582,8 +642,7 @@ function chartData4_real(req,res,excelFlag,callbackFunc){
     console.log("/chartData4_real called, excelFlag:" + excelFlag);
 
     var option_cache = cache.get("chartData4");  //for cache
-    if(option_cache){
-      
+    if(option_cache){      
       if(!excelFlag){
         console.log("[chartData4_real] cache found! return ok!");
 
@@ -596,9 +655,8 @@ function chartData4_real(req,res,excelFlag,callbackFunc){
 
     var option_cache_excel = cache.get("chartData4_excel");  //for cache
     if(option_cache_excel){
-      console.log("[chartData4_excel] option_cache_excel found! return ok! option_cache_excel:", option_cache_excel);
-
       if(excelFlag){ 
+        console.log("[chartData4_excel] option_cache_excel found! return ok! option_cache_excel:", option_cache_excel);
         return callbackFunc(req,res,option_cache_excel);
       }      
     }    
@@ -610,17 +668,16 @@ function chartData4_real(req,res,excelFlag,callbackFunc){
 
     var query = "select code2, category, count(*) as count, SUM(count(*)) over () as sum from events group by code2,category  order by code2,category";
 
+    console.log("");
+    console.log("[chartData4_real] query : ", query);
+    console.log("");
+
     pool.query(query, (err, result) => {
       try{
 
         var arr_data_level = [];
-        var arr_data_loc = [];        
-        var arr_data = []; 
-
-        var set_loc = new Set();
-        var set_level = new Set();
+        var arr_data_loc = [];  
         
-        var hashmap_category = {}; 
         var hashmap_loc = {};
 
         for(var i = 0; i < result.rows.length; i++){
@@ -633,18 +690,20 @@ function chartData4_real(req,res,excelFlag,callbackFunc){
           var level = result.rows[i].category;
           var count = result.rows[i].count;
 
+          if(!loc) {  //빈값은 skip
+            //loc = "없음";
+            continue;
+          }          
+
+          if(!level) {  //빈값은 skip
+            continue;
+          }
+
           if (arr_data_loc.indexOf(loc) == -1){
             arr_data_loc.push(loc);
           }
           if (arr_data_level.indexOf(level) == -1){
             arr_data_level.push(level);
-          }
-          if (arr_data.indexOf(count) == -1){
-            arr_data.push(count);
-          }
-
-          if (!hashmap_category[level]){
-            hashmap_category[level] = {name:level, datas:[]};
           }
 
           if(!hashmap_loc[loc]){
@@ -652,27 +711,31 @@ function chartData4_real(req,res,excelFlag,callbackFunc){
           }
           hashmap_loc[loc][level] = count;
           
-          console.log("level[i] : " + level);
-          console.log("count[i] : " + count);
+          //console.log("level[i] : " + level);
+          //console.log("count[i] : " + count);
           console.log("hashmap_loc[" + loc + "][" + level + "] : " + hashmap_loc[loc][level]);
-          console.log("");
-
-          hashmap_category[level].datas.push(count);
-
-          set_loc.add(loc);
-          set_level.add(level);
+          console.log(""); 
         }//for    
 
-        var mapArray = {};
+        var arrSource = [];
 
         for(var k=0; k<arr_data_loc.length; k++) {
-          var loc = arr_data_loc[k];
+          var oneSource = {};
 
-          mapArray[loc] = [];
+          var loc = arr_data_loc[k];
+          if(!loc){  //빈값은 skip
+            //loc = "없음";
+            continue;
+          }
+
+          oneSource["product"] = loc;
 
           for(var i=0; i<arr_data_level.length; i++) {
           
             var level = arr_data_level[i]; 
+            if(!level){  //빈값은 skip
+              continue;
+            }
 
             var count = 0;
 
@@ -680,8 +743,10 @@ function chartData4_real(req,res,excelFlag,callbackFunc){
               count = hashmap_loc[loc][level];
             }
 
-            mapArray[loc].push(count);
+            oneSource[level] = count;
           }//for
+
+          arrSource.push(oneSource);
         }
 
         var arrSeries = [];
@@ -689,63 +754,36 @@ function chartData4_real(req,res,excelFlag,callbackFunc){
 
         for(var i=0; i<arr_data_level.length; i++) {
           var level = arr_data_level[i];
+          console.log("level[" + i + "] : " + level); 
 
-          console.log("");
-          console.log("level[" + i + "] : " + level);
-
-          var datas_name = hashmap_category[level].name;
-          var datas_array = hashmap_category[level].datas;     
-          
-          console.log("datas_name[" + i + "] : " + datas_name);
-          console.log("datas_array[" + i + "] : " + datas_array);
-
-          arrSeries.push(
-            {
-              name: datas_name,
-              type: 'bar',
-              stack: 'total',
-              label: {
-                  show: true
-              },
-              emphasis: {
-                  focus: 'series'
-              },
-              data: datas_array
-            });
+          arrSeries.push({ type: 'bar' }); 
         }
-
-        option = {
-      
-          tooltip: {
-              trigger: 'axis',
-              axisPointer: {            // Use axis to trigger tooltip
-                  type: 'shadow'        // 'shadow' as default; can also be 'line' or 'shadow'
-              }
-          },
-          legend: {
-              data: arr_data_level
-          },
-          grid: {
-              left: '3%',
-              right: '4%',
-              bottom: '3%',
-              containLabel: true
-          },
-          xAxis: {
-              type: 'value'
-          },
-          yAxis: {
-              type: 'category',
-              data: arr_data_loc
-          },
-          series: arrSeries, 
-      };
+ 
+      option = {
+        legend: {},
+        tooltip: {},
+        dataset: {
+          dimensions: ['product', ...arr_data_level],
+          source:arrSource
+          /*
+          source: [
+            { product: 'Matcha Latte', '2015': 43.3, '2016': 85.8, '2017': 93.7 },
+            { product: 'Milk Tea', '2015': 83.1, '2016': 73.4, '2017': 55.1 },
+            { product: 'Cheese Cocoa', 2015: 86.4, 2016: 65.2, 2017: 82.5 },
+            { product: 'Walnut Brownie', 2015: 72.4, 2016: 53.9, 2017: 39.1 }
+          ]
+          */
+        },
+        xAxis: { type: 'category' },
+        yAxis: {},
+        series: arrSeries
+      };      
 
         cache.set("chartData4", option);  //for cache
         cache.set("chartData4_excel", [arr_data_level, arr_data_loc, hashmap_loc]);  //for cache
 
-        if(excelFlag){
-          return option;
+        if(excelFlag){          
+          return callbackFunc(req,res,[arr_data_level, arr_data_loc, hashmap_loc]);
         }        
 
         res.json({
@@ -762,44 +800,6 @@ function chartData4_real(req,res,excelFlag,callbackFunc){
   }    
 }
 
-
-//========================================================
-app.get('/chartDataExcel', function (req, res) {
-  var workbook = new ExcelJS.Workbook();
-
-  workbook.creator = 'Me';
-  workbook.lastModifiedBy = 'Her';
-  workbook.created = new Date(1985, 8, 30);
-  workbook.modified = new Date();
-  workbook.lastPrinted = new Date(2016, 9, 27);
-  workbook.properties.date1904 = true;
-
-  workbook.views = [
-      {
-          x: 0, y: 0, width: 10000, height: 20000,
-          firstSheet: 0, activeTab: 1, visibility: 'visible'
-      }
-  ];
-  var worksheet = workbook.addWorksheet('통계');
-  worksheet.columns = [
-      { header: 'Id', key: 'id', width: 20 },
-      { header: 'Name', key: 'name', width: 20 },
-      { header: 'D.O.B.', key: 'dob', width: 50, outlineLevel: 1, type: 'date', formulae: [new Date(2016, 0, 1)] }
-  ];
-
-  //=============================
-  worksheet.addRow({ id: 1, name: 'John Doe', dob: new Date(1970, 1, 1) });
-  worksheet.addRow({ id: 2, name: 'Jane Doe', dob: new Date(1965, 1, 7) });
-
-  //=============================
-  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  res.setHeader("Content-Disposition", "attachment; filename=" + "ReportByAllEvents.xlsx");
-  workbook.xlsx.write(res)
-      .then(function (data) {
-          res.end();
-          console.log('File write done........');
-      });
-});
 
 //========================================================
 app.get('/chartData1Excel', function (req2, res2) {
@@ -829,13 +829,17 @@ app.get('/chartData1Excel', function (req2, res2) {
       var worksheet = workbook.addWorksheet(title);
       worksheet.columns = [
           { header: '이벤트', key: 'id', width: 20 },
+          { header: '건수', key: 'count', width: 20 },
           { header: '비율', key: 'name', width: 20 }
       ];
+
+      console.log("");
     
       //=============================
       for (var i=0; i<dataList.length; i++){
         var data = dataList[i];
-        worksheet.addRow({ id: data.name, name: data.value + "%" });
+        console.log('data[' + i + ']:', data);
+        worksheet.addRow({ id: data.name, count: Number(data.count), name: Number(data.value) });
       }
     
       //=============================
@@ -844,13 +848,75 @@ app.get('/chartData1Excel', function (req2, res2) {
       workbook.xlsx.write(res)
           .then(function (data) {
               res.end();
-              console.log('File write done........');
+              console.log('File write done...');
           });
   }
 
   chartData1_real(req2, res2, true, excelMethod);
 
 });
+
+app.get('/chartData2Excel', function (req2, res2) {
+
+  var excelMethod = function(req,res,objParm) {
+
+      var title = objParm[0];
+      var eventList = objParm[1]; 
+      var countList = objParm[2];
+
+      console.log('chartData2Excel called');
+      //console.log('chartData2Excel called, objParm:', objParm);
+      
+      console.log('chartData2Excel title:', title);
+      console.log('chartData2Excel eventList:', eventList);
+      console.log('chartData2Excel countList:', countList);      
+
+      var workbook = new ExcelJS.Workbook();
+
+      workbook.creator = '';
+      workbook.lastModifiedBy = '';
+      workbook.created = new Date();
+      workbook.modified = new Date();
+      workbook.properties.date1904 = true;
+    
+      workbook.views = [
+          {
+              x: 0, y: 0, width: 10000, height: 20000,
+              firstSheet: 0, activeTab: 1, visibility: 'visible'
+          }
+      ];
+      var worksheet = workbook.addWorksheet(title);
+      worksheet.columns = [
+          { header: '이벤트', key: 'id', width: 20 },
+          { header: '건수', key: 'count', width: 20 }
+      ];
+
+      console.log("");
+    
+      //=============================
+      for (var i=0; i<eventList.length; i++){
+        var event = eventList[i];
+        var count = countList[i];
+        if(!count) count = 0;
+
+        console.log('data[' + i + '] event:' + event + ", count:" + count);
+        worksheet.addRow({ id: event, count: Number(count)});
+      }
+    
+      //=============================
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader("Content-Disposition", "attachment; filename=" + "ReportByDates.xlsx");
+      workbook.xlsx.write(res)
+          .then(function (data) {
+              res.end();
+              console.log('File write done...');
+          });
+  }
+
+  chartData2_real(req2, res2, true, excelMethod);
+
+});
+
 
 
 app.get('/chartData4Excel', function (req2, res2) { 
@@ -920,7 +986,7 @@ app.get('/chartData4Excel', function (req2, res2) {
         console.log("");
         console.log("[chartData4Excel][" + i + "][" + loc + "] level:", level);
         console.log("[chartData4Excel][" + i + "][" + k + "] hashmap_loc:",count);
-        rowObj["id_" + k] = count;     
+        rowObj["id_" + k] = Number(count);  //Number 중요     
       }//for
 
       worksheet.addRow(rowObj);
@@ -932,7 +998,7 @@ app.get('/chartData4Excel', function (req2, res2) {
     workbook.xlsx.write(res)
         .then(function (data) {
             res.end();
-            console.log('File write done........');
+            console.log('File write done...');
         });
   }
 

@@ -57,15 +57,14 @@
             }
 
             function downlaodExecl() {
-                alert("현재 엑셀 다운로드는 '이벤트 현황(총계)'만 지원됩니다");
-                return;
+                // alert("현재 엑셀 다운로드는 '이벤트 현황(총계)'만 지원됩니다");
+                // return;
                 
                 if (!confirm("전체기간에 대한 엑셀 다운로드는 서버에 부하를 많이 줄 수 있으며 5분이상 소요될 수 있습니다. \n\n계속하시겠습니까? \n(다운로드 완료시까지 창을 닫으면 안됨)")) {
                     return;
                 }
 
                 location.href = "/chartData4Excel";
-
             }            
 
         </script>        

@@ -21,60 +21,100 @@
         <script type="text/javascript" src="/js/bootstrap4.min.js"></script>
         <script type="text/javascript" src="/js/echarts.min.js"></script>        
         <script type="text/javascript" src="/js/util.js"></script>
+        
+        <!-- for material 달력 2021.10.06 -->
+        <script type="text/javascript" src="/js/moment-with-locales.min.js"></script> <!-- 반드시 먼저 선언해야함 -->
+        <script type="text/javascript" src="/js/bootstrap-material-datetimepicker.js"></script>
+        <link rel="stylesheet" href="/css/bootstrap-material-datetimepicker.css"> 
+        <!-- <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
+        <link rel="stylesheet" href="/css/material_icon.css">
 
         <script type="text/javascript">  
 
             window.onload = function() { 
-                $("#today").prop('disabled', false);
-                goDateBar();
+                $("#fromDate").prop('disabled', false);
+                goDateBar(false);
+
+                //for 달력
+                $('#fromDate').bootstrapMaterialDatePicker({ weekStart : 0, time: false, lang : 'ko' }); 
+                $('#toDate').bootstrapMaterialDatePicker({ weekStart : 0, time: false, lang : 'ko' }); 
             }
 
             function enterkey() {
                 if (window.event.keyCode == 13) {
-                    goDateBar();
+                    goDateBar(false);
                 }
             }
 
-            function goDateBar() {
+            function showWait() {
+                $("#chart").hide();
+                $("#wait").show();
+                $("#waitMsg").show();                
+            }
 
-                console.log("[goDateBar] called");
+            function goDateBar(excelFlag) {
+
+                console.log("[goDateBar] called, excelFlag:", excelFlag);
 
                 var dom = document.getElementById("chart");
                 var myChart = echarts.init(dom);
                 var app = {};
 
-                var today =  $("#today").val();
+                var fromDate =  $("#fromDate").val();
+                var toDate =  $("#toDate").val();
                 
-                if (!today) {
-                    today = getToday();
-                    $("#today").val(today);
+                if (!fromDate) {
+                    fromDate = getToday();
+                    $("#fromDate").val(fromDate);
                 }
+                if (!toDate) {
+                    toDate = getToday();
+                    $("#toDate").val(toDate);
+                }                
 
-                if (!isValidDate(today)) {
-                    alert("[오류] 유효하지 않은 날짜 형식입니다! " + today);
-                    $("#today").focus();
+                if (!isValidDate(fromDate)) {
+                    alert("[오류] 유효하지 않은 날짜 형식입니다! " + fromDate);
                     return;
                 }
-
-                if (today.length != 10) {
+                if (fromDate.length != 10) {
                     alert("[오류] 유효하지 않은 날짜 형식입니다! yyyy-mm-dd 형식으로 입력해주세요");
-                    $("#today").focus();
                     return;
                 }
 
-                var fromDate = today;
-                var toDate = getNextDay(fromDate);
+                if (!isValidDate(toDate)) {
+                    alert("[오류] 유효하지 않은 날짜 형식입니다! " + toDate);
+                    return;
+                }
+                if (toDate.length != 10) {
+                    alert("[오류] 유효하지 않은 날짜 형식입니다! yyyy-mm-dd 형식으로 입력해주세요");
+                    return;
+                }                
+
+                var nFromDate = convertDateToNumber(fromDate);
+                var nToDate = convertDateToNumber(toDate);
+                if (nToDate < nFromDate) {
+                    alert("[오류] 검색의 종료일이 시작일보다 빠릅니다!");
+                    return;
+                }                  
 
                 console.log("[goDateBar] fromDate:", fromDate);
                 console.log("[goDateBar] toDate:", toDate);
                 
                 var option;          
 
-                $.getJSON("/chartData2?fromDate=" + fromDate + "&toDate=" + toDate, function(data){
-                    console.log("[chartData2] data:", data.option);
-                    console.log("[chartData2] error:", data.error);
+                if(excelFlag){
+                    location.href = "/chartData2Excel?fromDate=" + fromDate + "&toDate=" + toDate;
+                }else{
 
+                    showWait();
+
+                    $.getJSON("/chartData2?fromDate=" + fromDate + "&toDate=" + toDate, function(data){
+                    console.log("[chartData2] data:", data.option);
+                    console.log("[chartData2] error:", data.error);                    
+                    
                     $("#wait").hide();
+                    $("#waitMsg").hide();
+                    $("#chart").show();
 
                     if (data.error) {
                         alert("[ERROR] " + data.error);
@@ -84,19 +124,21 @@
                     if (data.option){
                         myChart.setOption(data.option);
                     }
-                });                 
+                    
+                });         
+                }
+        
             }
 
             function downlaodExecl() {
-                alert("현재 엑셀 다운로드는 '이벤트 현황(총계)'만 지원됩니다");
-                return;
+                // alert("현재 엑셀 다운로드는 '이벤트 현황(총계)'만 지원됩니다");
+                // return;
 
-                if (!confirm("엑셀 다운로드를 하시겠습니까?")) {
+                if (!confirm("엑셀 다운로드를 하시겠습니까? (1분이상 소요될 수 있습니다)")) {
                     return;
                 }
-
-                location.href = "/chartData2Excel";
-
+ 
+                goDateBar(true);
             }               
 
         </script>        
@@ -110,7 +152,10 @@
                     
                     <img src="/img/excel.png" style="cursor: pointer;" title="download excel file"  onclick="downlaodExecl()"/>
 
-                    <input size="10" id="today" style="margin-left:2px;margin-right: 10px;" onkeyup="enterkey()"/>
+                    <input size="10" id="fromDate" style="margin-left:2px;margin-right: 10px;" onkeyup="enterkey()"/> 
+                    <span>~</span> 
+                    <input size="10" id="toDate" style="margin-left:10px;margin-right: 10px;" onkeyup="enterkey()"/>
+
                     <li class="nav-item">
                         <a class="nav-link" href="#" onclick="goDateBar()">[날짜별 발생 현황]</a>
                     </li>                    
@@ -129,8 +174,11 @@
             <br />
             <br />            
 
+            <div id="waitMsg" class="alert alert-danger" role="alert" style="display: none;">
+                [WARN] 데이터양이 많을 경우 3분이상 소요가 될 수 있습니다. (탭이나 창을 이동하면 안됨)
+            </div> 
+            <div id="wait" class="spinner-border text-primary"></div>             
             <div id="chart" style="height: 800px;"></div>   
-            <div id="wait" class="spinner-border text-primary"></div>
         </div> 
     </body>
  
