@@ -1,57 +1,78 @@
-<!DOCTYPE html>
-<html style="height: 100%">
-    <head>
-        <meta charset="utf-8">
-        <link rel="stylesheet" href="/css/bootstrap4.min.css">
-        <script src="/js/bootstrap4.min.js"></script>
-        <script src="/js/jquery-3.6.0.min.js"></script>
+<!doctype html>
+<html lang="ko">
 
-        <script>
-            console.log("init") ;
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-            function doLogin() {               
-                console.log("login called") ;
-                //alert("login called") ;
-                //alert("id:" + $('#username').val()) ;
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/css/bootstrap4.min.css">
+    <script src="/js/jquery-3.6.0.min.js"></script>
+    <script src="/js/bootstrap4.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/default.css">
+    <title>로그인 페이지</title>
 
-                if ($('#username').val() != "eventadmin") {
-                    alert("invalid id/pwd");
-                    return;
-                }
-                if ($('#password').val() != "eventadmin") {
-                    alert("invalid id/pwd");
-                    return;
-                }                
 
-                location.href = "/chart2";
-            }
-        </script>
-    </head>
-    <body style="height: 100%; margin: 0">
-        <div id="login">
-            <h3 class="text-center text-white pt-5">Login form</h3>
-            <div class="container">
-                <div id="login-row" class="row justify-content-center align-items-center">
-                    <div id="login-column" class="col-md-6">
-                        <div id="login-box" class="col-md-12">
-                            <form id="login-form" class="form" onsubmit="return false">
-                                <h3 class="text-center text-info">Admin Login</h3>
-                                <div class="form-group">
-                                    <label for="username" class="text-info">Username:</label><br>
-                                    <input type="text" name="username" id="username" class="form-control">
-                                </div>
-                                <div class="form-group">
-                                    <label for="password" class="text-info">Password:</label><br>
-                                    <input type="password" name="password" id="password" class="form-control">
-                                </div>
-                                <div class="form-group">                                    
-                                    <input type="submit" name="submit" id=login class="btn btn-info btn-md" value="login" onclick="doLogin();">
-                                </div>
-                            </form>
+    <style>
+        body {
+            background: linear-gradient(180deg, rgba(255, 249, 242, 1) 0%, rgba(255, 249, 242, 1) 45%, rgba(194, 224, 254, 1) 100%);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            background: url('./img/bg_bullet.png') no-repeat 0 0;
+            width: 100%;
+            height: 100%;
+            display: inline-block;
+            position: absolute;
+            top: 0;
+            left: 57%;
+            transform: translateX(-50%);
+        }
+
+        .login_area{
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+            position: absolute;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 10px 0px 20px rgb(0 0 0 / 10%);
+        }
+
+        .login_area .login_cont{
+            padding: 50px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="login_area">
+            <div class="login_cont">
+                <img src="img/logo.png">
+                <h1 class="comment">CCTV 통계 페이지</h1>
+                <h3 class="tit_login" alt="로그인타이틀">Login</h3>
+                <form id="login-form" class="form" action="/login" method="post">
+                    <input type="text" class="input_text input_id" name="username" placeholder="아이디">
+                    <input type="password" class="input_text input_pw" name="password" placeholder="비밀번호">
+                    <% if(typeof msg !== 'undefined') { %>
+                        <div>
+                            <p class="text-center text-info"><%= msg %></p>
                         </div>
-                    </div>
+                    <% } %>
+                    <input type="submit" class="btn_submit btn_select" value="로그인">
+                </form>
+                <div class="copyright">
+                    Copyright © 2021 MarkAny. All Rights Reserved
                 </div>
             </div>
         </div>
-    </body>
-</html>        
+    </div>
+ 
+</body>
+
+</html>
