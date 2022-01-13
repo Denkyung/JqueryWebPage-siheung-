@@ -1,4 +1,4 @@
-var lastUpdate = "2022-01-13 13:30";
+var lastUpdate = "2022-01-13 16:00";
 
 console.log("");
 console.log("==============================");
@@ -217,6 +217,9 @@ function init() {
         db_port = Number(port);
       }
     }
+    if (process.env.DB_PASSWORD != null && process.env.DB_PASSWORD.length > 0) {  //LOG_DB_PASSWORD가 없는 예전 버전 지원 - 2021.01.13 IYLEE
+      db_password = process.env.DB_PASSWORD;
+    }    
     if (process.env.LOG_DB_PASSWORD != null && process.env.LOG_DB_PASSWORD.length > 0) {
       db_password = process.env.LOG_DB_PASSWORD;
     }
