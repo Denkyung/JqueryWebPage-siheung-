@@ -1,0 +1,667 @@
+/* 공통 */
+* {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  font: 400 15px "Noto Sans KR", sans-serif;
+  letter-spacing: -1px;
+  line-height: 140%;
+  vertical-align: baseline;
+  background: transparent;
+  color: #dddddd;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+body {
+}
+
+h1 {
+  font-size: 40px;
+  font-weight: 900;
+}
+h2 {
+  font-size: 30px;
+  font-weight: 900;
+}
+h4 {
+  font-size: 20px;
+  font-weight: 900;
+}
+h5 {
+  font-size: 15px;
+  font-weight: 400;
+  color: #999999;
+}
+.clear {
+  clear: both;
+  font-size: 0px;
+  height: 0px;
+  line-height: 0px;
+}
+.clearfix:before {
+  display: table;
+  clear: both;
+  table-layout: fixed;
+  content: "";
+}
+.clearfix:after {
+  display: table;
+  clear: both;
+  table-layout: fixed;
+  content: "";
+}
+.input_text {
+  background: #979797;
+  border: 1px solid #979797;
+  padding: 9px 15px;
+  border-radius: 10px;
+  box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 0.1) inset;
+}
+/* .input_text:focus {
+  border: 1px solid #00c4d8;
+} */
+.input_check {
+  width: 18px;
+  height: 18px;
+  background: #ffffff;
+  border: 1px solid #11161b;
+}
+.select {
+  border-bottom: 2px solid #11161b;
+  padding: 9px 25px 9px 10px;
+  font-size: 13px;
+  color: #dddddd;
+}
+.select option {
+  font-size: 13px;
+}
+.align_left {
+  text-align: left !important;
+}
+.align_center {
+  text-align: center !important;
+}
+.align_right {
+  text-align: right !important;
+}
+.btn_primary {
+  background: #17d1a4;
+  color: #ffffff;
+}
+.btn_primary:hover {
+  background: #16b992;
+}
+.btn_primary:active {
+  background: #14a380;
+}
+
+.btn_select {
+  background: #014099;
+  color: #ffffff;
+  font-weight: bold;
+}
+.btn_select:hover {
+  background: #013d92;
+}
+.btn_select:active {
+  background: #108d9a;
+}
+
+.btn_warning {
+  background: #ebebeb;
+  color: #808080;
+}
+.btn_warning:hover {
+  background: #e0e0e0;
+  color: #808080;
+}
+.btn_warning:active {
+  background: #dddddd;
+  color: #808080;
+}
+.btn_warning_line {
+  background: #ffffff;
+  border: 1px solid #aaaaaa;
+  color: #aaaaaa;
+}
+.btn_cancel {
+  background: #ce3737;
+  color: #ffffff;
+}
+.btn_cancel:hover {
+  background: #b62929;
+  color: #ffffff;
+}
+.btn_cancel:active {
+  background: #a31e1e;
+  color: #ffffff;
+}
+.btn_line {
+  border: 1px solid #ffffff;
+  color: #ffffff;
+}
+.btn_large {
+  padding: 15px 50px !important;
+  font-size: 18px;
+  height: 50px;
+}
+.btn_medium {
+  padding: 8px 19px !important;
+  font-size: 15px;
+  height: 34px;
+}
+.btn_small {
+  padding: 5px 10px !important;
+  font-size: 13px;
+  height: 24px;
+}
+.btn_xsmall {
+  padding: 3px 10px !important;
+  font-size: 12px;
+  height: 22px;
+  border-radius: 5px;
+}
+.btn_submit {
+  width: 80%;
+  padding: 8px 19px !important;
+  font-size: 15px;
+  height: 40px;
+  border-radius: 5px;
+}
+
+.msg_primary {
+  color: #17d1a4 !important;
+}
+.msg_select {
+  color: #00c4d8 !important;
+}
+.msg_cancel {
+  color: #ce3737 !important;
+}
+.msg_wating {
+  color: #ffae00 !important;
+}
+.input_private {
+  background: #f2f9ff;
+}
+.input_private .msg_select {
+  font-weight: 700;
+}
+.input_cancel {
+  border: 1px solid #ce3737 !important;
+}
+.table_list {
+  width: 100%;
+}
+.table_list tr td {
+  vertical-align: middle;
+  text-align: center;
+  padding: 10px 0px;
+  color: #dddddd;
+  font-size: 13px;
+}
+.table_list tbody tr td {
+  border-bottom: 1px solid #444e58;
+}
+.table_list tbody tr td img {
+  vertical-align: middle;
+}
+/* col */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0px -15px;
+}
+.col-9 {
+  flex: 0 0 75%;
+  max-width: 75%;
+  padding: 0px 15px;
+}
+.col-8 {
+  flex: 0 0 66.666666%;
+  max-width: 66.666666%;
+  padding: 0px 15px;
+}
+.col-6 {
+  flex: 0 0 50%;
+  max-width: 50%;
+  padding: 0px 15px;
+}
+.col-4 {
+  flex: 0 0 33.333333%;
+  max-width: 33.333333%;
+  padding: 0px 15px;
+}
+.col-3 {
+  flex: 0 0 25%;
+  max-width: 25%;
+  padding: 0px 15px;
+}
+.col-2 {
+  flex: 0 0 16.666666%;
+  max-width: 16.666666%;
+  padding: 0px 15px;
+}
+.col-1 {
+  flex: 0 0 8.333333%;
+  max-width: 8.333333%;
+  padding: 0px 15px;
+}
+/* scroll */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+}
+*::-webkit-scrollbar-track {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  box-shadow: inset 0px 0px 1px white;
+}
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #232d36 transparent;
+}
+/* IE scrollbar */
+* {
+  scrollbar-face-color: #11161b;
+  scrollbar-track-color: #232d36;
+  scrollbar-arrow-color: none;
+  scrollbar-highlight-color: #11161b;
+  scrollbar-3dlight-color: none;
+  scrollbar-shadow-color: #11161b;
+  scrollbar-darkshadow-color: none;
+  -ms-overflow-style: none;
+  -ms-overflow-y: hidden;
+}
+
+/* intro */
+.wrap {
+  width: 100%;
+  height: 100%;
+}
+
+.login_area {
+  width: 500px;
+  text-align: center;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+.login_cont {
+  width: 500px;
+}
+
+.login_cont ul li {
+  word-break: break-all;
+  list-style: none;
+}
+
+.login_area .tit_login {
+  font-size: 45px;
+  font-weight: 300;
+  color: #ffffff;
+}
+
+.login_area .login_cont .comment {
+  color: #014099;
+  margin: 20px 0;
+}
+
+.login_area .divider {
+  margin: 50px 0px;
+}
+.login_area .input_text {
+  width: 80%;
+  margin-bottom: 5%;
+  font-size: 18px;
+  text-indent: 35px;
+  padding: 15px;
+  color: #fff;
+}
+
+.login_area input::placeholder {
+  color: #fff;
+}
+
+.login_area .input_id {
+  background: url("../img/ico_id.png") no-repeat 15px #c1c1c1;
+}
+.login_area .input_id:focus {
+  background: url("../img/ico_id_focus.png") no-repeat 15px #ee974f;
+  color: #fff;
+}
+.login_area .input_pw {
+  background: url("../img/ico_pw.png") no-repeat 15px #c1c1c1;
+}
+.login_area .input_pw:focus {
+  background: url("../img/ico_pw_focus.png") no-repeat 15px #ee974f;
+  color: #fff;
+}
+.login_area .create_id {
+  text-align: right;
+  width: 80%;
+  margin: auto;
+  margin-bottom: 10%;
+}
+.login_area .create_id img {
+  vertical-align: middle;
+  margin-right: 5px;
+}
+.login_area .create_id a {
+  color: #00c4d8;
+  text-decoration: underline;
+}
+.btn {
+  width: 100%;
+}
+.login_area .copyright {
+  width: 80%;
+  margin: auto;
+  position: relative;
+  bottom: -10%;
+  color: #929496;
+  border-top: 1px solid #929496;
+  padding: 5% 0px;
+}
+
+/* dashboard */
+.wrap_dashboard {
+  width: auto;
+  height: auto;
+  position: absolute;
+  top: 0px;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  overflow: hidden;
+  min-width: 0;
+  background: #374451;
+}
+.gnb {
+  width: 100%;
+  height: 60px;
+  background: #0086f0;
+  background: linear-gradient(to right, #00c4d8, #17d1a4);
+  overflow: hidden;
+  padding: 0px 20px;
+  vertical-align: middle;
+}
+.gnb img {
+  vertical-align: middle;
+}
+.gnb .left_section {
+  float: left;
+  padding-top: 12px;
+}
+.gnb .left_section img {
+  padding-right: 30px;
+}
+.gnb .right_section {
+  float: right;
+  padding-right: 20px;
+}
+.gnb .right_section ul {
+  display: table;
+  margin-top: 8px;
+}
+.gnb .right_section ul li {
+  display: table-cell;
+  padding-left: 30px;
+  cursor: pointer;
+}
+.gnb .alarm {
+  position: relative;
+}
+.gnb .alarm .num {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 18px;
+  height: 18px;
+  border-radius: 18px;
+  background: #dd3535;
+  color: #fff;
+  font-size: 10px;
+  text-align: center;
+  line-height: 18px;
+}
+.gnb .user_area {
+  border-radius: 5px;
+  padding: 8px 20px;
+  background: rgba(0, 0, 0, 0.2);
+  color: #fff;
+}
+.gnb .user_area img {
+  margin-right: 10px;
+}
+.gnb .user_area button {
+  margin-left: 15px;
+}
+.sidenav {
+  position: absolute;
+  background: #232d36;
+  top: 60px;
+  bottom: 0px;
+  left: 0px;
+  z-index: 100;
+  width: 120px;
+  box-shadow: 1px 2px 5px 0px rgba(0, 0, 0, 0.1);
+  transition: 0.1s;
+}
+.sidenav .sidenav_area {
+  width: 100%;
+  min-height: 500px;
+  padding-top: 40px;
+  position: relative;
+}
+.sidenav .sidenav_area ul li {
+  width: 100%;
+  height: 90px;
+  text-align: center;
+  color: #dddddd;
+  cursor: pointer;
+}
+.sidenav .sidenav_area ul li span.on {
+  color: #17d1a4;
+  font-weight: 700;
+}
+.sidenav .copyright {
+  position: absolute;
+  bottom: 10px;
+  font-size: 12px;
+  text-align: center;
+  color: #8b8e91;
+  margin: 0px 14px;
+  padding: 20px 0px;
+  border-top: 1px solid #8b8e91;
+}
+.dashboard {
+  background: #374451;
+  position: absolute;
+  top: 60px;
+  bottom: 0px;
+  left: 120px;
+  right: 0px;
+  width: auto;
+  overflow: auto;
+  transition: 0.1s;
+}
+.dashboard_area {
+  padding: 40px;
+  height: 100%;
+  min-width: 1100px;
+  min-height: 700px;
+  position: relative;
+}
+.dashboard_view {
+  background: #2f3a45;
+  border: 1px solid #2a3239;
+  margin-bottom: 30px;
+  border-radius: 10px;
+  padding: 30px;
+}
+.dashboard_tit {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+.dashboard_cont img {
+  width: 100%;
+}
+.login_time {
+  margin-bottom: 40px;
+}
+.btn_more {
+  width: 100%;
+  color: #00c4d8;
+  padding: 20px 10px 0px 10px;
+  font-weight: 700;
+}
+.gis_option {
+  background: #374451;
+  position: absolute;
+  top: 60px;
+  bottom: 0px;
+  left: 120px;
+  width: 300px;
+  z-index: 10;
+  box-shadow: 1px 2px 5px 0px rgba(0, 0, 0, 0.2);
+  transition: 0.1s;
+  padding: 40px 15px;
+}
+.gis_option .btn_option_close {
+  position: absolute;
+  right: -18px;
+  top: 48%;
+  width: 18px;
+  height: 55px;
+  background: #374451;
+  border-radius: 0px 5px 5px 0px;
+  font-size: 10px;
+  box-shadow: 1px 2px 5px 0px rgba(0, 0, 0, 0.2);
+  transition: 0.1s;
+  cursor: pointer;
+  z-index: 100;
+}
+.gis_option .btn_option_close img {
+  margin: 20px 0px 0px 3px;
+}
+.gis_option .btn_option_open {
+  display: none;
+  position: absolute;
+  right: -18px;
+  top: 48%;
+  width: 18px;
+  height: 55px;
+  background: #374451;
+  border-radius: 0px 5px 5px 0px;
+  font-size: 10px;
+  box-shadow: 1px 2px 5px 0px rgba(0, 0, 0, 0.2);
+  transition: 0.1s;
+  cursor: pointer;
+  z-index: 100;
+}
+.gis_option .btn_option_open img {
+  margin: 20px 0px 0px 3px;
+}
+.gis_option .btn_option button:first-child {
+  margin-right: 10px;
+}
+.gis_option h4 {
+  margin: 30px 0px 20px 0px;
+}
+.gis_area {
+  max-height: 100%;
+  overflow-y: auto;
+}
+.sel_option {
+  width: 100%;
+  background: #2f3a45;
+  border: 1px solid #2a3239;
+  box-shadow: 1px 1px 1px 0px rgb(255, 255, 255, 0.1);
+  border-radius: 10px;
+  margin-bottom: 15px;
+  padding: 20px;
+}
+.sel_option h6 {
+  font-weight: 700;
+  color: #ffffff;
+}
+.sel_option hr {
+  border: 1px solid #2a3239;
+}
+.sel_option ul li {
+  margin-bottom: 10px;
+}
+.sel_option ul li:last-child {
+  margin-bottom: 0px !important;
+}
+.map_option {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 10px 20px;
+  border-radius: 10px;
+}
+.map_option label {
+  padding: 0px 5px;
+}
+.search_area {
+  width: 100%;
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  margin-bottom: 20px;
+}
+.search_area .input_text {
+  width: 100px;
+  font-size: 13px;
+  border-bottom: 2px solid #6e6e6e;
+  border-left: 0px;
+  border-right: 0px;
+  border-top: 0px;
+  background: none;
+  border-radius: 0px;
+  box-shadow: none;
+  margin: 0px 10px;
+}
+.list_area .thead li {
+  text-align: center;
+}
+.list_area .thead .li01 {
+  width: 20px;
+}
+.list_area .thead .li02 {
+  width: 60px;
+}
+.list_area .thead .li03 {
+  width: 60px;
+}
+.list_area .thead .li04 {
+  width: 55px;
+}
+.list_area .thead .li05 {
+  width: 25px;
+}
+.list_area .thead .li06 {
+  width: 50px;
+}
+.table_scroll {
+  height: 120px;
+  overflow-y: auto;
+}
+.table_scroll tr td {
+  text-align: center;
+}
+.gis_area .align_right {
+  margin: 15px 0px;
+}
