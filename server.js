@@ -1,5 +1,5 @@
 var lastUpdate = "23 11 27";
-
+// 최신화
 console.log("");
 console.log("==============================");
 console.log("Version : " + lastUpdate);
